@@ -4,6 +4,14 @@
 
 Any changes to the specification will be listed here with the date of change.
 
+- `2022/10/01`: Link online testing environment.
+- `2022/10/01`: Fix `eraseRow` and `eraseCol` subcases.
+- `2022/10/01`: Clarify expected format for `operator<<()`.
+- `2022/10/01`: Define `SmallMatrix` methods with dummy return values in `SmallMatrix.cpp`.
+- `2022/09/28`: Fix link to style guide and remove friend function style requirement.
+- `2022/09/27`: Fixed comparison of `int` and `unsigned` for `gcc` compiler.
+- `2022/09/27`: Changed all references of `double const&` to `double`.
+
 ## 2 Learning Outcomes
 
 The purpose of this assignment is to consolidate the C++ concepts taught in weeks 1, 2, 3, and 4. The main learning outcomes are:
@@ -76,7 +84,7 @@ The specification for `SmallMatrix` is summarised below:
         <td>None</td>
     </tr>
     <tr>
-        <td><code>SmallMatrix(int, int, double const&)</code></td>
+        <td><code>SmallMatrix(int, int, double)</code></td>
         <td>A constructor which intialises a matrix whose elements are all initialised with the given value, and has the dimensions given by <code>mNumRows</code> and <code>mNumCols</code>. </td>
         <td><pre><code>SmallMatrix m(7, 4, 42.2);</code></pre></td>
         <td>None</td>
@@ -264,14 +272,14 @@ auto r = m1 * m2;</pre></code></td>
         <td>Throws <code>invalid_argument</code> if the number of columns on the left-hand side is not equal to the number of rows on the right-hand side.</td>
     </tr>
     <tr>
-        <td><code>friend SmallMatrix operator*(double const&, SmallMatrix const&)</code></td>
+        <td><code>friend SmallMatrix operator*(double, SmallMatrix const&)</code></td>
         <td>Returns the matrix result of the scalar multiplication of the the specified scalar value and specified matrix.</td>
         <td><pre><code>SmallMatrix m({{1, 2}, {3, 4}, {5, 6}});
 auto r = 42.2 * m;</pre></code></td>
         <td>None.</td>
     </tr>
     <tr>
-        <td><code>friend SmallMatrix operator*(SmallMatrix const&, double const&)</code></td>
+        <td><code>friend SmallMatrix operator*(SmallMatrix const&, double)</code></td>
         <td>Returns the matrix result of the scalar multiplication of the the specified scalar value and specified matrix.</td>
         <td><pre><code>SmallMatrix m({{1, 2}, {3, 4}, {5, 6}});
 auto r = m * 42.2;</pre></code></td>
@@ -455,6 +463,33 @@ The provided 2D matrix size is effectively `144 x 144`. This design decision was
 
 There will be no hard coding. Such methods implementing hard coded solutions will receive zero for that method.
 
+### 4.10 Insertion Operator
+
+The expected format when printing `SmallMatrix` is:
+- A set of `[]` brackets to denote the matrix itself.
+- A set of `[]` brackets for each row in the matrix.
+- The row brackets have two spaces for indentation whereas the matrix brackets have no indentation e.g.
+    ```
+    [      // Start of matrix.
+      [ ]  // A row.
+    ]      // End of matrix.
+    ```
+- Each row has its own line e.g.
+    ```
+    [
+      [ ]  // Row 1.
+      [ ]  // Row 2.
+    ]
+    ```
+- There is a single space between the row brackets if it is empty e.g.
+    ```
+    [ ]
+    ```
+- There is a single space between each bracket and matrix element in a row e.g.
+    ```
+    [ 1.1 2.2 3.3 ]
+    ```
+
 ## 5 Compiling & Running
 
 The C++ standard to be used for this assignment is C++14. Please ensure that your implementation is compilable according to this standard.
@@ -509,7 +544,7 @@ The assignment is worth 22% of the total course mark.
     <tr>
         <td>C++ Style</td>
         <td>35%</td>
-        <td>There will be marks for using C++ style such as using STL algorithms, avoiding C-style code, defining friend functions in headers, invalidating resources after move, etc.</td>
+        <td>There will be marks for using C++ style such as using STL algorithms, avoiding C-style code, invalidating resources after move, etc.</td>
     </tr>
     <tr>
         <td>General Style</td>
@@ -523,7 +558,7 @@ The assignment is worth 22% of the total course mark.
             <ul>
                 <li><code>SmallMatrix()</code></li>
                 <li><code>SmallMatrix(int, int)</code></li>
-                <li><code>SmallMatrix(int, int, double const&)</code></li>
+                <li><code>SmallMatrix(int, int, double)</code></li>
                 <li><s><code>SmallMatrix(std::initializer_list&lt;std::initializer_list&lt;double&gt;&gt; const&)</code></s>GIVEN</li>
                 <li><code>SmallMatrix(SmallMatrix const&)</code></li>
                 <li><code>SmallMatrix(SmallMatrix&&)</code></li>
@@ -540,9 +575,9 @@ The assignment is worth 22% of the total course mark.
     </tr>
 </table>
 
-Please refer to the [style guide](./style_guide.md) for a more complete set of programming practices of what to do and not to do.
+Please refer to the [style guide](https://gitlab.com/dennuguyen/mtrn2500-2022t3/-/blob/master/style-guide.md) for a more complete set of programming practices of what to do and not to do.
 
-**MacOS**: Please check that your solution compiles with at least `x86-64 gcc 5.1` and `-std=c++14` on [godbolt.org](https://godbolt.org/). This is to ensure that your solution will compile with our backend.
+**MacOS**: Please check that your solution compiles with at least `x86-64 gcc 5.1` and `-std=c++14` on [godbolt.org](https://godbolt.org/z/hPrns63dK). This is to ensure that your solution will compile with our backend.
 
 ## 9 Submission
 
