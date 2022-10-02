@@ -354,6 +354,9 @@ public:
      */
     friend std::ostream& operator<<(std::ostream& os, SmallMatrix const& sm);
 
+    void printNumRowCol();
+    void printMatrix();
+
 private:
     int mNumRows;
     int mNumCols;
@@ -367,3 +370,7 @@ private:
 SmallMatrix transpose(SmallMatrix const&);
 
 }  // namespace mtrn2500
+
+//------------------------------HELPER FUNCTIONS--------------------------------
+void printVector(const std::vector<double> vec);
+void printVector(const std::array<double, 144> &arr, int size);

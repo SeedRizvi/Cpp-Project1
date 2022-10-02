@@ -1,119 +1,163 @@
-#include "SmallMatrix.hpp"
+    #include "SmallMatrix.hpp"
 
-namespace mtrn2500 {
+    namespace mtrn2500 {
 
-SmallMatrix::SmallMatrix() 
-    : mNumRows{0},
-      mNumCols{0} {
-    // Make it so user cannot access any 144x144 array rows or cols.
-    
-}
-
-SmallMatrix::SmallMatrix(int numRows, int numCols) 
-    : mNumRows(numRows),
-      mNumCols(numCols),
-      mIsLargeMatrix(mNumRows * mNumCols >= mSmallSize) {
-
-    // 144 x 144 array exists but user should only be able to access:
-    //[0, numRows] for [0, numCols]
-    
-}
-
-
-SmallMatrix::SmallMatrix(int numRows, int numCols, double value) {}
-
-SmallMatrix::SmallMatrix(std::initializer_list<std::initializer_list<double>> const& il)
-    : mNumRows(il.size()),
-      mNumCols(il.begin() == il.end() ? 0 : il.begin()->size()),
-      mIsLargeMatrix(mNumRows * mNumCols >= mSmallSize) {
-    if (std::adjacent_find(il.begin(), il.end(), [](auto const& lhs, auto const& rhs) {
-            return lhs.size() != rhs.size();
-        }) != il.end()) {
-        throw std::invalid_argument("Rows have different sizes.");
+    SmallMatrix::SmallMatrix() 
+        : mNumRows{0},
+        mNumCols{0},
+        mIsLargeMatrix{mNumRows * mNumCols >= mSmallSize} {
+        // Make it so user cannot access any 144x144 array rows or cols.
+        
     }
 
-    if (mIsLargeMatrix) {
-        mHeapData.resize(mNumRows);
-    }
-
-    int row_index{0};
-    for (auto const& row : il) {
+    SmallMatrix::SmallMatrix(int numRows, int numCols) 
+        : mNumRows(numRows),
+        mNumCols(numCols),
+        mIsLargeMatrix(mNumRows * mNumCols >= mSmallSize) {
+        // If req matrix is large, change HeapData size to match
+        // the required size.
         if (mIsLargeMatrix) {
-            mHeapData.at(row_index).reserve(mNumCols);
-            std::copy(row.begin(), row.end(), mHeapData.at(row_index).begin());
-        } else {
-            std::transform(row.begin(), row.end(), mStackData.at(row_index).begin(),
-                           [](auto const& e) { return e; });
+            mHeapData.resize(mNumRows); 
         }
-        row_index++;
+        // Throw out_of_range exception if trying to access row / col out of bounds.
+        for (int row_index{0}; row_index < mNumRows; row_index++) { // Changed cond from mNumRows to Cols
+            if (mIsLargeMatrix) {
+                mHeapData.at(row_index).resize(mNumCols);
+                std::fill(mHeapData.at(row_index).begin(), mHeapData.at(row_index).end(), 0);
+            } else {
+                mStackData.at(row_index).fill(0);
+            }
+        }
     }
-}
 
-SmallMatrix::SmallMatrix(SmallMatrix const& sm) {}
+    SmallMatrix::SmallMatrix(int numRows, int numCols, double value) {}
 
-SmallMatrix::SmallMatrix(SmallMatrix&& sm) {}
+    SmallMatrix::SmallMatrix(std::initializer_list<std::initializer_list<double>> const& il)
+        : mNumRows(il.size()),
+        mNumCols(il.begin() == il.end() ? 0 : il.begin()->size()),
+        mIsLargeMatrix(mNumRows * mNumCols >= mSmallSize) {
+        if (std::adjacent_find(il.begin(), il.end(), [](auto const& lhs, auto const& rhs) {
+                return lhs.size() != rhs.size();
+            }) != il.end()) {
+            throw std::invalid_argument("Rows have different sizes.");
+        }
 
-SmallMatrix& SmallMatrix::operator=(SmallMatrix const& sm) { return *this; }
+        if (mIsLargeMatrix) {
+            mHeapData.resize(mNumRows);
+        }
 
-SmallMatrix& SmallMatrix::operator=(SmallMatrix&& sm) { return *this; }
+        int row_index{0};
+        for (auto const& row : il) {
+            if (mIsLargeMatrix) {
+                mHeapData.at(row_index).reserve(mNumCols);
+                std::copy(row.begin(), row.end(), mHeapData.at(row_index).begin());
+            } else {
+                std::transform(row.begin(), row.end(), mStackData.at(row_index).begin(),
+                            [](auto const& e) { return e; });
+            }
+            row_index++;
+        }
+    }
 
-SmallMatrix::~SmallMatrix() {}
+    SmallMatrix::SmallMatrix(SmallMatrix const& sm) {}
 
-double& SmallMatrix::operator()(int numRow, int numCol) { return mStackData[0][0]; }
+    SmallMatrix::SmallMatrix(SmallMatrix&& sm) {}
 
-const double& SmallMatrix::operator()(int numRow, int numCol) const { return mStackData[0][0]; }
+    SmallMatrix& SmallMatrix::operator=(SmallMatrix const& sm) { return *this; }
 
-std::vector<double*> SmallMatrix::row(int numRow) { return {}; }
+    SmallMatrix& SmallMatrix::operator=(SmallMatrix&& sm) { return *this; }
 
-std::vector<double const*> SmallMatrix::row(int numRow) const { return {}; }
+    SmallMatrix::~SmallMatrix() {}
 
-std::vector<double*> SmallMatrix::col(int numCol) { return {}; }
+    double& SmallMatrix::operator()(int numRow, int numCol) { return mStackData[0][0]; }
 
-std::vector<double const*> SmallMatrix::col(int numCol) const { return {}; }
+    const double& SmallMatrix::operator()(int numRow, int numCol) const { return mStackData[0][0]; }
 
-std::pair<int, int> SmallMatrix::size() const { return {}; }
+    std::vector<double*> SmallMatrix::row(int numRow) { return {}; }
 
-bool SmallMatrix::isSmall() const {
-    if (mNumRows * mNumCols >= mSmallSize) {return false;} else {return true;}
-}
+    std::vector<double const*> SmallMatrix::row(int numRow) const { return {}; }
 
-void SmallMatrix::resize(int numRows, int numCols) {}
+    std::vector<double*> SmallMatrix::col(int numCol) { return {}; }
 
-void SmallMatrix::insertRow(int numRow, std::vector<double> const& row) {}
+    std::vector<double const*> SmallMatrix::col(int numCol) const { return {}; }
 
-void SmallMatrix::insertCol(int numCol, std::vector<double> const& col) {}
+    std::pair<int, int> SmallMatrix::size() const {
+        std::pair<int, int> Size(mNumRows, mNumCols);
+        return Size;
+    }
 
-void SmallMatrix::eraseRow(int numRow) {}
+    bool SmallMatrix::isSmall() const {
+        // if (mNumRows * mNumCols >= mSmallSize) {return false;} else {return true;}
+        return !mIsLargeMatrix;
+    }
 
-void SmallMatrix::eraseCol(int numCol) {}
+    void SmallMatrix::resize(int numRows, int numCols) {}
 
-bool operator==(SmallMatrix const& lhs, SmallMatrix const& rhs) { return false; }
+    void SmallMatrix::insertRow(int numRow, std::vector<double> const& row) {}
 
-bool operator!=(SmallMatrix const& lhs, SmallMatrix const& rhs) { return false; }
+    void SmallMatrix::insertCol(int numCol, std::vector<double> const& col) {}
 
-SmallMatrix operator+(SmallMatrix const& lhs, SmallMatrix const& rhs) { return {}; }
+    void SmallMatrix::eraseRow(int numRow) {}
 
-SmallMatrix operator-(SmallMatrix const& lhs, SmallMatrix const& rhs) { return {}; }
+    void SmallMatrix::eraseCol(int numCol) {}
 
-SmallMatrix operator*(SmallMatrix const& lhs, SmallMatrix const& rhs) { return {}; }
+    bool operator==(SmallMatrix const& lhs, SmallMatrix const& rhs) { return false; }
 
-SmallMatrix operator*(double s, SmallMatrix const& sm) { return {}; }
+    bool operator!=(SmallMatrix const& lhs, SmallMatrix const& rhs) { return false; }
 
-SmallMatrix operator*(SmallMatrix const& sm, double s) { return {}; }
+    SmallMatrix operator+(SmallMatrix const& lhs, SmallMatrix const& rhs) { return {}; }
 
-SmallMatrix& SmallMatrix::operator+=(SmallMatrix const& sm) { return *this; }
+    SmallMatrix operator-(SmallMatrix const& lhs, SmallMatrix const& rhs) { return {}; }
 
-SmallMatrix& SmallMatrix::operator-=(SmallMatrix const& sm) { return *this; }
+    SmallMatrix operator*(SmallMatrix const& lhs, SmallMatrix const& rhs) { return {}; }
 
-SmallMatrix& SmallMatrix::operator*=(SmallMatrix const& sm) { return *this; }
+    SmallMatrix operator*(double s, SmallMatrix const& sm) { return {}; }
 
-SmallMatrix& SmallMatrix::operator*=(double s) { return *this; }
+    SmallMatrix operator*(SmallMatrix const& sm, double s) { return {}; }
 
-SmallMatrix transpose(SmallMatrix const& sm) { return {}; }
+    SmallMatrix& SmallMatrix::operator+=(SmallMatrix const& sm) { return *this; }
 
-std::ostream& operator<<(std::ostream& os, SmallMatrix const& sm) { return os; }
+    SmallMatrix& SmallMatrix::operator-=(SmallMatrix const& sm) { return *this; }
 
-//----------------------------GETTER FUNCTIONS----------------------------------
-// int SmallMatrix::
+    SmallMatrix& SmallMatrix::operator*=(SmallMatrix const& sm) { return *this; }
 
-}  // namespace mtrn2500
+    SmallMatrix& SmallMatrix::operator*=(double s) { return *this; }
+
+    SmallMatrix transpose(SmallMatrix const& sm) { return {}; }
+
+    std::ostream& operator<<(std::ostream& os, SmallMatrix const& sm) { return os; }
+
+    //----------------------------GETTER FUNCTIONS------------------------------
+    
+    void SmallMatrix::printNumRowCol() {
+        std::cout << "Rows: " << mNumRows << " Cols: " << mNumCols << '\n';
+    }
+
+    void SmallMatrix::printMatrix() {
+        if (mIsLargeMatrix) {
+            for (auto row : mHeapData) {
+                printVector(row);
+            }
+        } else {
+            for (int i{0}; i < mNumRows; i++) {
+                printVector(mStackData.at(i), mNumCols);
+            }
+        }
+    }
+    }  // namespace mtrn2500
+
+
+    //----------------------------HELPER FUNCTIONS------------------------------
+    void printVector(const std::vector<double> vec) {
+        for (int i{0}; i < vec.size(); i++) {
+            std::cout << vec.at(i) << " ";
+        }
+        std::cout << '\n';
+    }
+
+    void printVector(const std::array<double, 144> &arr, int size) {
+        for (int i{0}; i < size; i++) {
+            std::cout << arr.at(i) << " ";
+        }
+        std::cout << '\n';
+    }
