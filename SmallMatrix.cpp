@@ -19,18 +19,19 @@
         if (mIsLargeMatrix) {
             mHeapData.resize(mNumRows); 
         }
-        // Throw out_of_range exception if trying to access row / col out of bounds.
-        for (int row_index{0}; row_index < mNumRows; row_index++) { // Changed cond from mNumRows to Cols
-            if (mIsLargeMatrix) {
-                mHeapData.at(row_index).resize(mNumCols);
-                std::fill(mHeapData.at(row_index).begin(), mHeapData.at(row_index).end(), 0);
-            } else {
-                mStackData.at(row_index).fill(0);
-            }
-        }
+        fillMatrix();
     }
 
-    SmallMatrix::SmallMatrix(int numRows, int numCols, double value) {}
+    SmallMatrix::SmallMatrix(int numRows, int numCols, double value)
+        : mNumRows(numRows),
+        mNumCols(numCols),
+        mIsLargeMatrix(mNumRows * mNumCols >= mSmallSize) {
+
+        if (mIsLargeMatrix) {
+            mHeapData.resize(mNumRows); 
+        }
+        fillMatrix(value);
+    }
 
     SmallMatrix::SmallMatrix(std::initializer_list<std::initializer_list<double>> const& il)
         : mNumRows(il.size()),
@@ -59,7 +60,14 @@
         }
     }
 
-    SmallMatrix::SmallMatrix(SmallMatrix const& sm) {}
+    SmallMatrix::SmallMatrix(SmallMatrix const& sm) {
+        //Copy constructor
+        mNumRows = sm.mNumRows;
+        mNumCols = sm.mNumCols;
+        mIsLargeMatrix = sm.mIsLargeMatrix;
+        mStackData = sm.mStackData;
+        mHeapData  =  sm.mHeapData;
+    }
 
     SmallMatrix::SmallMatrix(SmallMatrix&& sm) {}
 
@@ -127,7 +135,7 @@
 
     std::ostream& operator<<(std::ostream& os, SmallMatrix const& sm) { return os; }
 
-    //----------------------------GETTER FUNCTIONS------------------------------
+    //----------------------------CLASS HELPER FUNCTIONS------------------------
     
     void SmallMatrix::printNumRowCol() {
         std::cout << "Rows: " << mNumRows << " Cols: " << mNumCols << '\n';
@@ -144,12 +152,35 @@
             }
         }
     }
+
+    void SmallMatrix::fillMatrix() {
+        for (int row_index{0}; row_index < mNumRows; row_index++) { // Changed cond from mNumRows to Cols
+            if (mIsLargeMatrix) {
+                mHeapData.at(row_index).resize(mNumCols);
+                std::fill(mHeapData.at(row_index).begin(), mHeapData.at(row_index).end(), 0);
+            } else {
+                mStackData.at(row_index).fill(0);
+            }
+        }
+    }
+
+    void SmallMatrix::fillMatrix(double value) {
+        for (int row_index{0}; row_index < mNumRows; row_index++) { // Changed cond from mNumRows to Cols
+            if (mIsLargeMatrix) {
+                mHeapData.at(row_index).resize(mNumCols);
+                std::fill(mHeapData.at(row_index).begin(), mHeapData.at(row_index).end(), value);
+            } else {
+                mStackData.at(row_index).fill(value);
+            }
+        }
+    };
+
     }  // namespace mtrn2500
 
 
     //----------------------------HELPER FUNCTIONS------------------------------
     void printVector(const std::vector<double> vec) {
-        for (int i{0}; i < vec.size(); i++) {
+        for (int unsigned i{0}; i < vec.size(); i++) {
             std::cout << vec.at(i) << " ";
         }
         std::cout << '\n';

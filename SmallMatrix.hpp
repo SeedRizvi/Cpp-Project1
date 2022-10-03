@@ -356,7 +356,14 @@ public:
 
     void printNumRowCol();
     void printMatrix();
+    /**
+     * @brief Fills out stack or heap data.
+     * @param value value to fill matrix with (if provided, else 0).
+     */
+    void fillMatrix();
 
+    void fillMatrix(double value);
+    
 private:
     int mNumRows;
     int mNumCols;
