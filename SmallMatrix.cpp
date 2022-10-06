@@ -32,32 +32,32 @@
         fillMatrix(value);
     }
 
-SmallMatrix::SmallMatrix(std::initializer_list<std::initializer_list<double>> const& il)
-    : mNumRows(il.size()),
-      mNumCols(il.begin() == il.end() ? 0 : il.begin()->size()),
-      mIsLargeMatrix(mNumRows * mNumCols >= mSmallSize) {
-    if (std::adjacent_find(il.begin(), il.end(), [](auto const& lhs, auto const& rhs) {
-            return lhs.size() != rhs.size();
-        }) != il.end()) {
-        throw std::invalid_argument("Rows have different sizes.");
-    }
-
-    if (mIsLargeMatrix) {
-        mHeapData.resize(mNumRows);
-    }
-
-    int row_index{0};
-    for (auto const& row : il) {
-        if (mIsLargeMatrix) {
-            mHeapData.at(row_index).resize(mNumCols);
-            std::copy(row.begin(), row.end(), mHeapData.at(row_index).begin());
-        } else {
-            std::transform(row.begin(), row.end(), mStackData.at(row_index).begin(),
-                           [](auto const& e) { return e; });
+    SmallMatrix::SmallMatrix(std::initializer_list<std::initializer_list<double>> const& il)
+        : mNumRows(il.size()),
+        mNumCols(il.begin() == il.end() ? 0 : il.begin()->size()),
+        mIsLargeMatrix(mNumRows * mNumCols >= mSmallSize) {
+        if (std::adjacent_find(il.begin(), il.end(), [](auto const& lhs, auto const& rhs) {
+                return lhs.size() != rhs.size();
+            }) != il.end()) {
+            throw std::invalid_argument("Rows have different sizes.");
         }
-        row_index++;
+
+        if (mIsLargeMatrix) {
+            mHeapData.resize(mNumRows);
+        }
+
+        int row_index{0};
+        for (auto const& row : il) {
+            if (mIsLargeMatrix) {
+                mHeapData.at(row_index).resize(mNumCols);
+                std::copy(row.begin(), row.end(), mHeapData.at(row_index).begin());
+            } else {
+                std::transform(row.begin(), row.end(), mStackData.at(row_index).begin(),
+                            [](auto const& e) { return e; });
+            }
+            row_index++;
+        }
     }
-}
 
     SmallMatrix::SmallMatrix(SmallMatrix const& sm) { // Copy Constructor
         mNumRows = sm.mNumRows;
@@ -67,32 +67,57 @@ SmallMatrix::SmallMatrix(std::initializer_list<std::initializer_list<double>> co
         mHeapData  =  sm.mHeapData;
     }
 
-    SmallMatrix::SmallMatrix(SmallMatrix&& sm) // Move Constructor
-    : mNumRows{sm.mNumRows},
-    mNumCols{sm.mNumCols},
-    mIsLargeMatrix{sm.mIsLargeMatrix} {
-    
-    if (sm.mIsLargeMatrix) {
-        mHeapData = sm.mHeapData;
-    } else {
-        mStackData = sm.mStackData;
-    }
-    // Invalidating original object
-    sm.fillMatrix();
-    sm.mNumRows = {0};
-    sm.mNumCols = {0};
-    sm.mIsLargeMatrix = {false};
+    SmallMatrix::SmallMatrix(SmallMatrix&& sm) { // Move Constructor
+        if (sm.mIsLargeMatrix) {
+            mHeapData = sm.mHeapData;
+        } else {
+            mStackData = sm.mStackData;
+        }
+        // Invalidating original object
+        sm.fillMatrix();
+        mNumRows = std::exchange(sm.mNumRows, 0);
+        mNumCols = std::exchange(sm.mNumCols, 0);
+        mIsLargeMatrix = std::exchange(sm.mIsLargeMatrix, false);
     } // P  
 
-    SmallMatrix& SmallMatrix::operator=(SmallMatrix const& sm) { return *this; } // P  
+    SmallMatrix& SmallMatrix::operator=(SmallMatrix const& sm) { // Copy assignment
+        if (this !=  &sm) {
+            //assign rows, cols, mStackData, mHeapData
+            mNumRows = sm.mNumRows;
+            mNumCols = sm.mNumCols;
+            mIsLargeMatrix = sm.mIsLargeMatrix;
+            mStackData = sm.mStackData;
+            mHeapData  =  sm.mHeapData;
+        }   
+        return *this; 
+    } // P  
 
-    SmallMatrix& SmallMatrix::operator=(SmallMatrix&& sm) { return *this; } // P  
+    SmallMatrix& SmallMatrix::operator=(SmallMatrix&& sm) { // Move assignment
+        if (this != &sm) {
+            if (sm.mIsLargeMatrix) {
+                mHeapData = sm.mHeapData;
+            } else {
+                mStackData = sm.mStackData;
+            }
+            // Invalidating original object
+            sm.fillMatrix();
+            mNumRows = std::exchange(sm.mNumRows, 0);
+            mNumCols = std::exchange(sm.mNumCols, 0);
+            mIsLargeMatrix = std::exchange(sm.mIsLargeMatrix, false);
+        }
+        
+        return *this; 
+    } // P  
 
     SmallMatrix::~SmallMatrix() {}
 
-    double& SmallMatrix::operator()(int numRow, int numCol) { return mStackData[0][0]; } // P  
+    double& SmallMatrix::operator()(int numRow, int numCol) {
+        return mStackData[0][0];
+    } // P  
 
-    const double& SmallMatrix::operator()(int numRow, int numCol) const { return mStackData[0][0]; } // P  
+    const double& SmallMatrix::operator()(int numRow, int numCol) const {
+        return mStackData[0][0];
+    } // P  
 
     std::vector<double*> SmallMatrix::row(int numRow) { return {}; }
 
