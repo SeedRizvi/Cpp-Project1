@@ -112,11 +112,35 @@
     SmallMatrix::~SmallMatrix() {}
 
     double& SmallMatrix::operator()(int numRow, int numCol) {
-        return mStackData[0][0];
+        if (mNumRows == 0 or mNumCols == 0) {
+            throw std::out_of_range("This matrix has no rows or columns.\n");
+
+        } else if ((numRow >= mNumRows or numRow < 0) or (numCol >= mNumCols or numCol < 0)) {
+            throw std::out_of_range("Specified row or column is out of bounds.\n");  
+
+        } else {
+            if (mIsLargeMatrix) {
+                return mHeapData.at(numRow).at(numCol);
+            } else {
+                return mStackData.at(numRow).at(numCol);
+            }
+        }   
     } // P  
 
     const double& SmallMatrix::operator()(int numRow, int numCol) const {
-        return mStackData[0][0];
+        if (mNumRows == 0 or mNumCols == 0) {
+            throw std::out_of_range("This matrix has no rows or columns.\n");
+
+        } else if ((numRow >= mNumRows or numRow < 0) or (numCol >= mNumCols or numCol < 0)) {
+            throw std::out_of_range("Specified row or column is out of bounds.\n");  
+
+        } else {
+            if (mIsLargeMatrix) {
+                return mHeapData.at(numRow).at(numCol);
+            } else {
+                return mStackData.at(numRow).at(numCol);
+            }
+        }
     } // P  
 
     std::vector<double*> SmallMatrix::row(int numRow) { return {}; }
@@ -146,9 +170,41 @@
 
     void SmallMatrix::eraseCol(int numCol) {}
 
-    bool operator==(SmallMatrix const& lhs, SmallMatrix const& rhs) { return false; } // P  
+    bool operator==(SmallMatrix const& lhs, SmallMatrix const& rhs) {
+        if ((lhs.mNumRows != rhs.mNumRows) or (lhs.mNumCols != rhs.mNumCols)) {
+            return false;
+        } 
+        for (int row_index{0}; row_index < lhs.mNumRows; row_index++) {
+            if (lhs.mIsLargeMatrix and rhs.mIsLargeMatrix) {
+                if (lhs.mHeapData.at(row_index) != rhs.mHeapData.at(row_index)) {
+                    return false;
+                }
+            } else {
+                if (lhs.mStackData.at(row_index) != rhs.mStackData.at(row_index)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    } // P  
 
-    bool operator!=(SmallMatrix const& lhs, SmallMatrix const& rhs) { return false; } // P  
+    bool operator!=(SmallMatrix const& lhs, SmallMatrix const& rhs) {
+        if ((lhs.mNumRows != rhs.mNumRows) or (lhs.mNumCols != rhs.mNumCols)) {
+            return true;
+        } 
+        for (int row_index{0}; row_index < lhs.mNumRows; row_index++) {
+            if (lhs.mIsLargeMatrix and rhs.mIsLargeMatrix) {
+                if (lhs.mHeapData.at(row_index) != rhs.mHeapData.at(row_index)) {
+                    return true;
+                }
+            } else {
+                if (lhs.mStackData.at(row_index) != rhs.mStackData.at(row_index)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    } // P  
 
     SmallMatrix operator+(SmallMatrix const& lhs, SmallMatrix const& rhs) { return {}; }
 

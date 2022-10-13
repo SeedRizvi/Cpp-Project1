@@ -4,6 +4,12 @@
 
 Any changes to the specification will be listed here with the date of change.
 
+- `2022/10/11`: Reclarify `operator!=`.
+- `2022/10/10`: Fix the range of `insertRow` and `insertCol`.
+- `2022/10/10`: Fixed `eraseCol` and `const` method tests.
+- `2022/10/10`: Correct `operator!=` description.
+- `2022/10/05`: Update progress check deadline to be 14/10/2022.
+- `2022/10/05`: Minimise number of tests to avoid memory overflow. Clean up README section 5 and 6.
 - `2022/10/05`: Give `catch2` option and instruct how to isolate test cases.
 - `2022/10/04`: Removed `-fsanitize=address` flag because it may not be supported by everyone.
 - `2022/10/03`: Added `-fsanitize=address` flag to compile command for extra safety.
@@ -213,14 +219,14 @@ s.resize(100, 100);</pre></code></td>
         <td>Inserts a row at the specified row index. If the number of columns in the matrix is zero, then the matrix is resized to match the size of the specified row vector.</td>
         <td><pre><code>SmallMatrix m(2, 4);
 s.insertRow(0, {1, 2, 3, 4});</pre></code></td>
-        <td>Throws <code>out_of_range</code> if the specified row index is outside the range <code>[0, max_row)</code>.<br><br>Throws <code>invalid_argument</code> if the size of the specified vector is not equal to the number of columns in the matrix.</td>
+        <td>Throws <code>out_of_range</code> if the specified row index is outside the range <code>[0, max_row]</code>.<br><br>Throws <code>invalid_argument</code> if the size of the specified vector is not equal to the number of columns in the matrix.</td>
     </tr>
     <tr>
         <td><code>void insertCol(int, std::vector<double> const&)</code></td>
         <td>Inserts a column at the specified column index. If the number of rows in the matrix is zero, then the matrix is resized to match the size of the specified column vector.</td>
         <td><pre><code>SmallMatrix m(3, 2);
 s.insertCol(2, {1, 2, 3});</pre></code></td>
-        <td>Throws <code>out_of_range</code> if the specified column index is outside the range <code>[0, max_col)</code>.<br><br>Throws <code>invalid_argument</code> if the size of the specified vector is not equal to the number of rows in the matrix.</td>
+        <td>Throws <code>out_of_range</code> if the specified column index is outside the range <code>[0, max_col]</code>.<br><br>Throws <code>invalid_argument</code> if the size of the specified vector is not equal to the number of rows in the matrix.</td>
     </tr>
     <tr>
         <td><code>void eraseRow(int)</code></td>
@@ -246,7 +252,7 @@ m1 == m2;</pre></code></td>
     </tr>
     <tr>
         <td><code>friend bool operator!=(SmallMatrix const&, SmallMatrix const&)</code></td>
-        <td>Returns false if any of the elements in the left-hand side matrix are not equal to its positionally-corresponding element in the right-hand side matrix. Otherwise, true.</td>
+        <td>Returns true if any of the elements in the left-hand side matrix are not equal to its positionally-corresponding element in the right-hand side matrix. Otherwise, false.</td>
         <td><pre><code>SmallMatrix m1({{1, 2, 3}, {4, 5, 7}});
 SmallMatrix m2({{1, 2, 3}, {4, 5, 6}});
 m1 != m2;</pre></code></td>
@@ -495,11 +501,11 @@ The expected format when printing `SmallMatrix` is:
     [ 1.1 2.2 3.3 ]
     ```
 
-## 5 Compiling & Running
+## 5 Compiling
 
 The C++ standard to be used for this assignment is C++14. Please ensure that your implementation is compilable according to this standard.
 
-You may choose to use `test_small_matrix.doctest.cpp` or `test_small_matrix.catch2.cpp. Both test files have exactly the same test cases and assertions.
+You may choose to use `test_small_matrix.doctest.cpp` or `test_small_matrix.catch2.cpp`. Both test files have exactly the same test cases and assertions.
 
 To compile the assignment with the `doctest` test file:
 ```
@@ -510,6 +516,21 @@ To compile the assignment with the `catch2` test file:
 ```
 g++ -std=c++14 -Wall -Werror test_small_matrix.catch2.cpp SmallMatrix.cpp -o small_matrix
 ```
+
+If you wish to write your own `main` function, then you may want to create a new file called `main.cpp`, then compile without `test_small_matrix.cpp`:
+```
+g++ -std=c++14 -Wall -Werror main.cpp SmallMatrix.cpp -o small_matrix
+```
+
+> Do not submit your solutions with your `main` function.
+
+## 6 Testing
+
+`catch2` and `doctest` are two different test suites that are provided. You may choose one or the other or both based on preference.
+
+A minimal version of the tests is provided in `test_small_matrix.catch2.cpp` and `test_small_matrix.doctest.cpp`.
+
+A full version of the tests is provided in `test_small_matrix.catch2.full.cpp` and `test_small_matrix.doctest.full.cpp` however this may cause your program to crash.
 
 Executing the binary file will check the entire test suite:
 ```
@@ -526,15 +547,6 @@ To check only the progress check methods with `catch2`, add the following argume
 ./small_matrix "[progress-check]"
 ```
 
-If you wish to write your own `main` function, then you may want to create a new file called `main.cpp`, then compile without `test_small_matrix.cpp`:
-```
-g++ -std=c++14 -Wall -Werror main.cpp SmallMatrix.cpp -o small_matrix
-```
-
-> Do not submit your solutions with your `main` function.
-
-## 5.1 Isolating Tests
-
 For `test_small_matrix.doctest.cpp`, you may want to isolate your tests like so:
 - `-tc` isolates for the test case.
 - `-sc` isolates for the subcase.
@@ -548,12 +560,6 @@ For `test_small_matrix.catch2.cpp`, you may want to isolate your tests like so:
 ```
 ./small_matrix "SmallMatrix(int\, int)" -c "0 x 0"
 ```
-
-## 6 Testing
-
-The testing framework that we will use is [doctest](https://github.com/doctest/doctest) which is a single-header framework. This single-header file has been provided as `doctest.h`. Do not modify this file.
-
-You are provided the full test suite in `test_small_matrix.cpp`.
 
 ## 7 Version Control
 
@@ -618,7 +624,7 @@ You are required to submit to Moodle for both the progress check and final submi
 - `SmallMatrix.hpp`
 - `SmallMatrix.cpp`
 
-The deadline for the progress check submission is 23:55 Friday Week 4 (07/10/2022).
+The deadline for the progress check submission is 23:55 Friday Week 5 (14/10/2022).
 
 The deadline for final submission is 13:00 Monday Week 7 (24/10/2022).
 
