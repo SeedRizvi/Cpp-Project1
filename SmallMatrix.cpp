@@ -109,7 +109,7 @@
         return *this; 
     } // P  
 
-    SmallMatrix::~SmallMatrix() {}
+    SmallMatrix::~SmallMatrix() {} // P
 
     double& SmallMatrix::operator()(int numRow, int numCol) {
         if (mNumRows == 0 or mNumCols == 0) {
@@ -143,13 +143,13 @@
         }
     } // P  
 
-    std::vector<double*> SmallMatrix::row(int numRow) { return {}; }
+    std::vector<double*> SmallMatrix::row(int numRow) { return {}; } // CR
 
-    std::vector<double const*> SmallMatrix::row(int numRow) const { return {}; }
+    std::vector<double const*> SmallMatrix::row(int numRow) const { return {}; } // CR
 
-    std::vector<double*> SmallMatrix::col(int numCol) { return {}; }
+    std::vector<double*> SmallMatrix::col(int numCol) { return {}; } // CR
 
-    std::vector<double const*> SmallMatrix::col(int numCol) const { return {}; }
+    std::vector<double const*> SmallMatrix::col(int numCol) const { return {}; } // CR
 
     std::pair<int, int> SmallMatrix::size() const { // P  
         std::pair<int, int> Size(mNumRows, mNumCols);
@@ -160,15 +160,15 @@
         return !mIsLargeMatrix;
     }
 
-    void SmallMatrix::resize(int numRows, int numCols) {}
+    void SmallMatrix::resize(int numRows, int numCols) {} // DN
 
-    void SmallMatrix::insertRow(int numRow, std::vector<double> const& row) {}
+    void SmallMatrix::insertRow(int numRow, std::vector<double> const& row) {} // HD
 
-    void SmallMatrix::insertCol(int numCol, std::vector<double> const& col) {}
+    void SmallMatrix::insertCol(int numCol, std::vector<double> const& col) {} // HD
 
-    void SmallMatrix::eraseRow(int numRow) {}
+    void SmallMatrix::eraseRow(int numRow) {} // HD
 
-    void SmallMatrix::eraseCol(int numCol) {}
+    void SmallMatrix::eraseCol(int numCol) {} // HD
 
     bool operator==(SmallMatrix const& lhs, SmallMatrix const& rhs) {
         if ((lhs.mNumRows != rhs.mNumRows) or (lhs.mNumCols != rhs.mNumCols)) {
@@ -206,27 +206,35 @@
         return false;
     } // P  
 
-    SmallMatrix operator+(SmallMatrix const& lhs, SmallMatrix const& rhs) { return {}; }
+    SmallMatrix operator+(SmallMatrix const& lhs, SmallMatrix const& rhs) { return {}; } // CR
 
-    SmallMatrix operator-(SmallMatrix const& lhs, SmallMatrix const& rhs) { return {}; }
+    SmallMatrix operator-(SmallMatrix const& lhs, SmallMatrix const& rhs) { return {}; } // CR
 
-    SmallMatrix operator*(SmallMatrix const& lhs, SmallMatrix const& rhs) { return {}; }
+    SmallMatrix operator*(SmallMatrix const& lhs, SmallMatrix const& rhs) { return {}; } // DN
 
-    SmallMatrix operator*(double s, SmallMatrix const& sm) { return {}; }
+    SmallMatrix operator*(double s, SmallMatrix const& sm) {
+        SmallMatrix result(sm.mNumRows, sm.mNumCols);
+        result.scalarMultiply(s, sm);
+        return result;
+    } // CR
 
-    SmallMatrix operator*(SmallMatrix const& sm, double s) { return {}; }
+    SmallMatrix operator*(SmallMatrix const& sm, double s) {
+        SmallMatrix result(sm.mNumRows, sm.mNumCols);
+        result.scalarMultiply(s, sm);
+        return result;
+    } // CR
 
-    SmallMatrix& SmallMatrix::operator+=(SmallMatrix const& sm) { return *this; }
+    SmallMatrix& SmallMatrix::operator+=(SmallMatrix const& sm) { return *this; } // CR
 
-    SmallMatrix& SmallMatrix::operator-=(SmallMatrix const& sm) { return *this; }
+    SmallMatrix& SmallMatrix::operator-=(SmallMatrix const& sm) { return *this; } // CR
 
-    SmallMatrix& SmallMatrix::operator*=(SmallMatrix const& sm) { return *this; }
+    SmallMatrix& SmallMatrix::operator*=(SmallMatrix const& sm) { return *this; } // DN
 
-    SmallMatrix& SmallMatrix::operator*=(double s) { return *this; }
+    SmallMatrix& SmallMatrix::operator*=(double s) { return *this; } // CR
 
-    SmallMatrix transpose(SmallMatrix const& sm) { return {}; }
+    SmallMatrix transpose(SmallMatrix const& sm) { return {}; } // DN
 
-    std::ostream& operator<<(std::ostream& os, SmallMatrix const& sm) { return os; }
+    std::ostream& operator<<(std::ostream& os, SmallMatrix const& sm) { return os; } // DN
 
     //----------------------------CLASS HELPER FUNCTIONS------------------------
     
@@ -266,7 +274,23 @@
                 mStackData.at(row_index).fill(value);
             }
         }
-    };
+    }
+
+    void SmallMatrix::scalarMultiply(double num, SmallMatrix const& sm)  {
+        for (int row_index{0}; row_index < sm.mNumRows; row_index++) {
+            if (sm.mIsLargeMatrix) {
+                auto first_col = sm.mHeapData.at(row_index).begin();
+                auto last_col = sm.mHeapData.at(row_index).end();
+                auto result_col = mHeapData.at(row_index).begin();
+                std::transform(first_col, last_col, result_col, [num](auto& i) {return num*i;});
+            } else {
+                auto first_col = sm.mStackData.at(row_index).begin();
+                auto last_col = sm.mStackData.at(row_index).end();
+                auto result_col = mStackData.at(row_index).begin();
+                std::transform(first_col, last_col, result_col, [num](auto& i) {return num*i;});
+            }
+        }
+    }
 
     }  // namespace mtrn2500
 

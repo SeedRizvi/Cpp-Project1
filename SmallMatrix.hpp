@@ -354,15 +354,29 @@ public:
      */
     friend std::ostream& operator<<(std::ostream& os, SmallMatrix const& sm);
 
+    /**
+     * @brief Prints number of rows and columns.
+     */
     void printNumRowCol();
+
+    /**
+     * @brief Prints contents of matrix.
+     */
     void printMatrix();
+
     /**
      * @brief Fills out stack or heap data.
      * @param value value to fill matrix with (if provided, else 0).
      */
     void fillMatrix();
-
     void fillMatrix(double value);
+
+    /**
+     * @brief Writes product of row vector (or array) and num to calling matrix.
+     * @param num number of type double to multiply matrix by.
+     * @param sm SmallMatrix.
+     */
+    void scalarMultiply(double num, SmallMatrix const& sm);
     
 private:
     int mNumRows;
