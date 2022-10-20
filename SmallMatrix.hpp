@@ -377,7 +377,34 @@ public:
      * @param sm SmallMatrix.
      */
     void scalarMultiply(double num, SmallMatrix const& sm);
-    
+
+    /**
+     * @brief Writes difference of provided vector(s) (or arrays) to calling matrix.
+     * @param lhs left hand side SmallMatrix.
+     * @param rhs right hand side Second SmallMatrix.
+     */
+    void matrixSubtraction(SmallMatrix const& lhs, SmallMatrix const& rhs);
+
+    /**
+     * @brief Writes difference of provided vector (or array) to calling matrix.
+     * @param sm SmallMatrix.
+     */
+    void matrixSubtraction(SmallMatrix const& sm);
+
+    /**
+     * @brief Writes sum of provided vector(s) (or arrays) to calling matrix.
+     * @param lhs left hand side SmallMatrix.
+     * @param rhs right hand side Second SmallMatrix.
+     */
+    void matrixAddition(SmallMatrix const& lhs, SmallMatrix const& rhs);
+
+    /**
+     * @brief Writes sum of provided vector to calling matrix.
+     * @param sm SmallMatrix.
+     */
+    void matrixAddition(SmallMatrix const& sm);
+
+
 private:
     int mNumRows;
     int mNumCols;

@@ -206,9 +206,23 @@
         return false;
     } // P  
 
-    SmallMatrix operator+(SmallMatrix const& lhs, SmallMatrix const& rhs) { return {}; } // CR
+    SmallMatrix operator+(SmallMatrix const& lhs, SmallMatrix const& rhs) {
+        if ((lhs.mNumRows != rhs.mNumRows) or (lhs.mNumCols != rhs.mNumCols)) {
+            throw std::invalid_argument("Provided matrices are not of equal size");
+        } 
+        SmallMatrix result(lhs.mNumRows, lhs.mNumCols);
+        result.matrixAddition(lhs, rhs);
+        return result;
+    } // CR
 
-    SmallMatrix operator-(SmallMatrix const& lhs, SmallMatrix const& rhs) { return {}; } // CR
+    SmallMatrix operator-(SmallMatrix const& lhs, SmallMatrix const& rhs) {
+        if ((lhs.mNumRows != rhs.mNumRows) or (lhs.mNumCols != rhs.mNumCols)) {
+            throw std::invalid_argument("Provided matrices are not of equal size");
+        } 
+        SmallMatrix result(lhs.mNumRows, lhs.mNumCols);
+        result.matrixSubtraction(lhs, rhs);
+        return result;
+    } // CR
 
     SmallMatrix operator*(SmallMatrix const& lhs, SmallMatrix const& rhs) { return {}; } // DN
 
@@ -224,13 +238,27 @@
         return result;
     } // CR
 
-    SmallMatrix& SmallMatrix::operator+=(SmallMatrix const& sm) { return *this; } // CR
+    SmallMatrix& SmallMatrix::operator+=(SmallMatrix const& sm) {
+        if ((this->mNumRows != sm.mNumRows) or (this->mNumCols != sm.mNumCols)) {
+            throw std::invalid_argument("Provided matrices are not of equal size");
+        } 
+        this->matrixAddition(sm);
+        return *this;
+    } // CR
 
-    SmallMatrix& SmallMatrix::operator-=(SmallMatrix const& sm) { return *this; } // CR
+    SmallMatrix& SmallMatrix::operator-=(SmallMatrix const& sm) {
+        if ((this->mNumRows != sm.mNumRows) or (this->mNumCols != sm.mNumCols)) {
+            throw std::invalid_argument("Provided matrices are not of equal size");
+        } 
+        this->matrixSubtraction(sm);
+        return *this;
+    } // CR
 
     SmallMatrix& SmallMatrix::operator*=(SmallMatrix const& sm) { return *this; } // DN
 
-    SmallMatrix& SmallMatrix::operator*=(double s) { return *this; } // CR
+    SmallMatrix& SmallMatrix::operator*=(double s) {
+        return *this;
+    } // CR
 
     SmallMatrix transpose(SmallMatrix const& sm) { return {}; } // DN
 
@@ -288,6 +316,68 @@
                 auto last_col = sm.mStackData.at(row_index).end();
                 auto result_col = mStackData.at(row_index).begin();
                 std::transform(first_col, last_col, result_col, [num](auto& i) {return num*i;});
+            }
+        }
+    }
+
+    void SmallMatrix::matrixSubtraction(SmallMatrix const& lhs, SmallMatrix const& rhs) {
+        for (int row_index{0}; row_index < mNumRows; row_index++) {
+            for (int col_index{0}; col_index < mNumCols; col_index++) {
+                if (mIsLargeMatrix) {
+                    mHeapData.at(row_index).at(col_index) = 
+                        lhs.mHeapData.at(row_index).at(col_index) -
+                        rhs.mHeapData.at(row_index).at(col_index);
+                } else {
+                    mStackData.at(row_index).at(col_index) = 
+                        lhs.mStackData.at(row_index).at(col_index) -
+                        rhs.mStackData.at(row_index).at(col_index);
+                }
+            }
+        }
+    }
+
+    void SmallMatrix::matrixSubtraction(SmallMatrix const& sm) {
+        //
+        for (int row_index{0}; row_index < mNumRows; row_index++) {
+            for (int col_index{0}; col_index < mNumCols; col_index++) {
+                if (this->mIsLargeMatrix) {
+                    this->mHeapData.at(row_index).at(col_index) -= 
+                        sm.mHeapData.at(row_index).at(col_index);
+                } else {
+                    this->mStackData.at(row_index).at(col_index) -= 
+                        sm.mStackData.at(row_index).at(col_index);
+                }
+            }
+        }
+    }
+
+    void SmallMatrix::matrixAddition(SmallMatrix const& lhs, SmallMatrix const& rhs) {
+        for (int row_index{0}; row_index < mNumRows; row_index++) {
+            for (int col_index{0}; col_index < mNumCols; col_index++) {
+                if (mIsLargeMatrix) {
+                    mHeapData.at(row_index).at(col_index) = 
+                        lhs.mHeapData.at(row_index).at(col_index) +
+                        rhs.mHeapData.at(row_index).at(col_index);
+                } else {
+                    mStackData.at(row_index).at(col_index) = 
+                        lhs.mStackData.at(row_index).at(col_index) +
+                        rhs.mStackData.at(row_index).at(col_index);
+                }
+            }
+        }
+    }
+
+    void SmallMatrix::matrixAddition(SmallMatrix const& sm) {
+        //
+        for (int row_index{0}; row_index < mNumRows; row_index++) {
+            for (int col_index{0}; col_index < mNumCols; col_index++) {
+                if (this->mIsLargeMatrix) {
+                    this->mHeapData.at(row_index).at(col_index) += 
+                        sm.mHeapData.at(row_index).at(col_index);
+                } else {
+                    this->mStackData.at(row_index).at(col_index) += 
+                        sm.mStackData.at(row_index).at(col_index);
+                }
             }
         }
     }
