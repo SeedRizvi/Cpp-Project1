@@ -147,46 +147,62 @@
         if ((numRow >= mNumRows or numRow < 0)) {
             throw std::out_of_range("Specified column is out of bounds.\n"); 
         }
-        std::vector<double*> result_col;
-        if (mIsLargeMatrix) {
-            for (auto& elem : mHeapData.at(numRow)) {
-                result_col.push_back(&elem);
+        std::vector<double*> result_row;
+        for (int col_index{0}; col_index < mNumCols; col_index++) {
+            if (mIsLargeMatrix) {
+                result_row.push_back(&mHeapData.at(numRow).at(col_index));
+            } else {
+                result_row.push_back(&mStackData.at(numRow).at(col_index));
             }
-        } else {
-            for (auto& elem : mStackData.at(numRow)) {
-                result_col.push_back(&elem);
-            }
+            
         }
-        
-        return result_col;
+        return result_row;
     } // CR
 
     std::vector<double const*> SmallMatrix::row(int numRow) const {
         if ((numRow >= mNumRows or numRow < 0)) {
             throw std::out_of_range("Specified column is out of bounds.\n"); 
         }
-        std::vector<double const*> result_col;
-        if (mIsLargeMatrix) {
-            for (auto& elem : mHeapData.at(numRow)) {
-                result_col.push_back(&elem);
-            }
-        } else {
-            for (auto& elem : mStackData.at(numRow)) {
-                result_col.push_back(&elem);
+        std::vector<double const*> result_row;
+        for (int col_index{0}; col_index < mNumCols; col_index++) {
+            if (mIsLargeMatrix) {
+                result_row.push_back(&mHeapData.at(numRow).at(col_index));
+            } else {
+                result_row.push_back(&mStackData.at(numRow).at(col_index));
             }
         }
-        return result_col;
+        return result_row;
     } // CR
 
     std::vector<double*> SmallMatrix::col(int numCol) {
         if ((numCol >= mNumCols or numCol < 0)) {
             throw std::out_of_range("Specified column is out of bounds.\n"); 
         }
-        
-        return {};
+        std::vector<double*> result_col;
+        for (int row_index{0}; row_index < mNumRows; row_index++) {
+            if (mIsLargeMatrix) {
+                result_col.push_back(&mHeapData.at(row_index).at(numCol));
+            } else {
+                result_col.push_back(&mStackData.at(row_index).at(numCol));
+            }
+        }
+        return result_col;
     } // CR
 
-    std::vector<double const*> SmallMatrix::col(int numCol) const { return {}; } // CR
+    std::vector<double const*> SmallMatrix::col(int numCol) const {
+        if ((numCol >= mNumCols or numCol < 0)) {
+            throw std::out_of_range("Specified column is out of bounds.\n"); 
+        }
+        std::vector<double const*> result_col;
+        for (int row_index{0}; row_index < mNumRows; row_index++) {
+            if (mIsLargeMatrix) {
+                result_col.push_back(&mHeapData.at(row_index).at(numCol));
+            } else {
+                result_col.push_back(&mStackData.at(row_index).at(numCol));
+            }
+        }
+        return result_col;
+    } // CR
 
     std::pair<int, int> SmallMatrix::size() const { // P  
         std::pair<int, int> Size(mNumRows, mNumCols);
