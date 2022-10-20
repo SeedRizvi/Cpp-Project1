@@ -257,6 +257,7 @@
     SmallMatrix& SmallMatrix::operator*=(SmallMatrix const& sm) { return *this; } // DN
 
     SmallMatrix& SmallMatrix::operator*=(double s) {
+        this->scalarMultiply(s);
         return *this;
     } // CR
 
@@ -320,6 +321,22 @@
         }
     }
 
+    void SmallMatrix::scalarMultiply(double num)  {
+        for (int row_index{0}; row_index < mNumRows; row_index++) {
+            if (mIsLargeMatrix) {
+                auto first_col = mHeapData.at(row_index).begin();
+                auto last_col = mHeapData.at(row_index).end();
+                auto result_col = mHeapData.at(row_index).begin();
+                std::transform(first_col, last_col, result_col, [num](auto& i) {return num*i;});
+            } else {
+                auto first_col = mStackData.at(row_index).begin();
+                auto last_col = mStackData.at(row_index).end();
+                auto result_col = mStackData.at(row_index).begin();
+                std::transform(first_col, last_col, result_col, [num](auto& i) {return num*i;});
+            }
+        }
+    }
+
     void SmallMatrix::matrixSubtraction(SmallMatrix const& lhs, SmallMatrix const& rhs) {
         for (int row_index{0}; row_index < mNumRows; row_index++) {
             for (int col_index{0}; col_index < mNumCols; col_index++) {
@@ -340,11 +357,11 @@
         //
         for (int row_index{0}; row_index < mNumRows; row_index++) {
             for (int col_index{0}; col_index < mNumCols; col_index++) {
-                if (this->mIsLargeMatrix) {
-                    this->mHeapData.at(row_index).at(col_index) -= 
+                if (mIsLargeMatrix) {
+                    mHeapData.at(row_index).at(col_index) -= 
                         sm.mHeapData.at(row_index).at(col_index);
                 } else {
-                    this->mStackData.at(row_index).at(col_index) -= 
+                    mStackData.at(row_index).at(col_index) -= 
                         sm.mStackData.at(row_index).at(col_index);
                 }
             }
@@ -371,11 +388,11 @@
         //
         for (int row_index{0}; row_index < mNumRows; row_index++) {
             for (int col_index{0}; col_index < mNumCols; col_index++) {
-                if (this->mIsLargeMatrix) {
-                    this->mHeapData.at(row_index).at(col_index) += 
+                if (mIsLargeMatrix) {
+                    mHeapData.at(row_index).at(col_index) += 
                         sm.mHeapData.at(row_index).at(col_index);
                 } else {
-                    this->mStackData.at(row_index).at(col_index) += 
+                    mStackData.at(row_index).at(col_index) += 
                         sm.mStackData.at(row_index).at(col_index);
                 }
             }

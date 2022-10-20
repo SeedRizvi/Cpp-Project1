@@ -379,6 +379,12 @@ public:
     void scalarMultiply(double num, SmallMatrix const& sm);
 
     /**
+     * @brief Writes product of scalar to calling matrix.
+     * @param num number of type double to multiply matrix by.
+     */
+    void scalarMultiply(double num);
+
+    /**
      * @brief Writes difference of provided vector(s) (or arrays) to calling matrix.
      * @param lhs left hand side SmallMatrix.
      * @param rhs right hand side Second SmallMatrix.
