@@ -213,7 +213,11 @@
         return !mIsLargeMatrix;
     }
 
-    void SmallMatrix::resize(int numRows, int numCols) {} // DN
+    void SmallMatrix::resize(int numRows, int numCols) {
+        if ((numRows < 0) or (numCols < 0)) {
+            throw std::out_of_range("Resize rows or columns cannot be negative.");
+        }
+    } // DN
 
     void SmallMatrix::insertRow(int numRow, std::vector<double> const& row) {} // HD
 
@@ -277,7 +281,14 @@
         return result;
     } // CR
 
-    SmallMatrix operator*(SmallMatrix const& lhs, SmallMatrix const& rhs) { return {}; } // DN
+    SmallMatrix operator*(SmallMatrix const& lhs, SmallMatrix const& rhs) {
+        if (lhs.mNumCols != rhs.mNumRows) {
+            throw std::invalid_argument("LHS num columns and RHS num rows do not match.");
+        }
+        SmallMatrix result(lhs.mNumRows, rhs.mNumCols);
+        result.matrixMultiply(lhs, rhs);
+        return result;
+    } // DN
 
     SmallMatrix operator*(double s, SmallMatrix const& sm) {
         SmallMatrix result(sm.mNumRows, sm.mNumCols);
@@ -307,7 +318,13 @@
         return *this;
     } // CR
 
-    SmallMatrix& SmallMatrix::operator*=(SmallMatrix const& sm) { return *this; } // DN
+    SmallMatrix& SmallMatrix::operator*=(SmallMatrix const& sm) {
+        if (this->mNumCols != sm.mNumRows) {
+            throw std::invalid_argument("LHS num columns and RHS num rows do not match.");
+        }
+        this->matrixMultiply(sm);
+        return *this;
+    } // DN
 
     SmallMatrix& SmallMatrix::operator*=(double s) {
         this->scalarMultiply(s);
@@ -316,7 +333,26 @@
 
     SmallMatrix transpose(SmallMatrix const& sm) { return {}; } // DN
 
-    std::ostream& operator<<(std::ostream& os, SmallMatrix const& sm) { return os; } // DN
+    std::ostream& operator<<(std::ostream& os, SmallMatrix const& sm) {
+        os << "[\n";
+        for (int row_index{0}; row_index < sm.mNumRows; row_index++) {
+            if (sm.mIsLargeMatrix) {
+                os << "  [ ";
+                std::copy(sm.mHeapData.at(row_index).begin(),
+                    sm.mHeapData.at(row_index).end(), 
+                    std::ostream_iterator<double>(os," "));
+                os << "]\n";
+            } else {
+                auto first = sm.mStackData.at(row_index).begin();
+                auto last = sm.mStackData.at(row_index).begin() + sm.mNumCols;
+                os << "  [ ";
+                std::copy(first, last, std::ostream_iterator<double>(os," "));
+                os << "]\n";
+            }
+        }
+        os << "]\n";
+        return os;
+    } // DN
 
     //----------------------------CLASS HELPER FUNCTIONS------------------------
     
@@ -438,7 +474,6 @@
     }
 
     void SmallMatrix::matrixAddition(SmallMatrix const& sm) {
-        //
         for (int row_index{0}; row_index < mNumRows; row_index++) {
             for (int col_index{0}; col_index < mNumCols; col_index++) {
                 if (mIsLargeMatrix) {
@@ -448,6 +483,44 @@
                     mStackData.at(row_index).at(col_index) += 
                         sm.mStackData.at(row_index).at(col_index);
                 }
+            }
+        }
+    }
+
+    void SmallMatrix::matrixMultiply(SmallMatrix const& lhs, SmallMatrix const& rhs) {
+        auto numCols1 = lhs.size().second;
+        // operation for each row and col in resulting matrix
+        for (int i{0}; i < mNumRows; i++) {
+            for (int j{0}; j < mNumCols; j++) {
+                for (int k{0}; k < numCols1; k++) {
+                    if (mIsLargeMatrix) {
+                        mHeapData.at(i).at(j) += 
+                            lhs.mHeapData.at(i).at(k) * rhs.mHeapData.at(k).at(j);
+                    } else {
+                        mStackData.at(i).at(j) += 
+                            lhs.mStackData.at(i).at(k) * rhs.mStackData.at(k).at(j);
+                    }
+                }
+            }
+        }
+    }
+
+    void SmallMatrix::matrixMultiply(SmallMatrix const& sm) {
+        auto lhs(*this);
+        // operation for each row and col in resulting matrix
+        for (int i{0}; i < this->mNumRows; i++) {
+            for (int j{0}; j < this->mNumCols; j++) {
+                for (int k{0}; k < mNumCols; k++) {
+                    if (this->mIsLargeMatrix) {
+                        mHeapData.at(i).at(j) += 
+                            lhs.mHeapData.at(i).at(k) * sm.mHeapData.at(k).at(j);
+                    } else {
+                        mStackData.at(i).at(j) += 
+                            lhs.mStackData.at(i).at(k) * sm.mStackData.at(k).at(j);
+                    }
+                }
+                if (mIsLargeMatrix) {mHeapData.at(i).at(j) -= lhs.mHeapData.at(i).at(j);}
+                else {mStackData.at(i).at(j) -= lhs.mStackData.at(i).at(j);}
             }
         }
     }

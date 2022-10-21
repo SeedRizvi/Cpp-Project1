@@ -11,6 +11,8 @@
 #include <stdexcept>
 #include <utility>
 #include <vector>
+#include <sstream>
+#include <iterator>
 
 namespace mtrn2500 {
 
@@ -410,6 +412,18 @@ public:
      */
     void matrixAddition(SmallMatrix const& sm);
 
+    /**
+     * @brief Writes matrix multiplication product of lhs and rhs to calling matrix.
+     * @param lhs left hand side SmallMatrix.
+     * @param rhs right hand side SmallMatrix.
+     */
+    void matrixMultiply(SmallMatrix const& lhs, SmallMatrix const& rhs);
+
+    /**
+     * @brief Writes matrix multiplication product of *this and 'sm' to calling matrix.
+     * @param sm SmallMatrix.
+     */
+    void matrixMultiply(SmallMatrix const& sm);
 
 private:
     int mNumRows;
