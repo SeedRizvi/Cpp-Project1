@@ -109,7 +109,7 @@
         return *this; 
     } // P  
 
-    SmallMatrix::~SmallMatrix() {} // P
+    SmallMatrix::~SmallMatrix() {} // Nothing specified due to no dynamic memory allocation.
 
     double& SmallMatrix::operator()(int numRow, int numCol) {
         if (mNumRows == 0 or mNumCols == 0) {
