@@ -248,11 +248,8 @@
         else { // Make sure this only runs if all other if's are not true
             if (numRows * numCols >= mSmallSize) {
                 //Convert from Stack to heapdata if new size is Large.
-                std::cout << "Calling stack to heap conversion\n";
-                stackToHeap(numRows, numCols);
-                mNumRows = numRows;
-                mNumCols = numCols;
                 mIsLargeMatrix = true;
+                stackToHeap(numRows, numCols);
             } else {
                 if (numRows < mNumRows) {
                     fillRow(numRows, mNumRows);
@@ -289,11 +286,26 @@
         auto epsilon{0.0000001}; 
         for (int row_index{0}; row_index < lhs.mNumRows; row_index++) {
             for (int col_index{0}; col_index < lhs.mNumCols; col_index++) {
-                if (lhs.mIsLargeMatrix and rhs.mIsLargeMatrix) {
+                // Vector-Array comparison
+                if (lhs.mIsLargeMatrix and (not rhs.mIsLargeMatrix)) {
+                    auto lhsValue = lhs.mHeapData.at(row_index).at(col_index);
+                    auto rhsValue = rhs.mStackData.at(row_index).at(col_index);
+                    if (abs(lhsValue - rhsValue) > epsilon) {return false;}
+                } 
+                // Array-Vector comparison
+                else if ((not lhs.mIsLargeMatrix) and rhs.mIsLargeMatrix) {
+                    auto lhsValue = lhs.mStackData.at(row_index).at(col_index);
+                    auto rhsValue = rhs.mHeapData.at(row_index).at(col_index);
+                    if (abs(lhsValue - rhsValue) > epsilon) {return false;}
+                } 
+                // Vector-Vector comparison
+                else if (lhs.mIsLargeMatrix and rhs.mIsLargeMatrix) {
                     auto lhsValue = lhs.mHeapData.at(row_index).at(col_index);
                     auto rhsValue = rhs.mHeapData.at(row_index).at(col_index);
                     if (abs(lhsValue - rhsValue) > epsilon) {return false;}
-                } else {
+                } 
+                // Array-Array comparison
+                else {
                     auto lhsValue = lhs.mStackData.at(row_index).at(col_index);
                     auto rhsValue = rhs.mStackData.at(row_index).at(col_index);
                     if (abs(lhsValue - rhsValue) > epsilon) {return false;}
@@ -307,14 +319,33 @@
         if ((lhs.mNumRows != rhs.mNumRows) or (lhs.mNumCols != rhs.mNumCols)) {
             return true;
         } 
+        auto epsilon{0.0000001}; 
         for (int row_index{0}; row_index < lhs.mNumRows; row_index++) {
-            if (lhs.mIsLargeMatrix and rhs.mIsLargeMatrix) {
-                if (lhs.mHeapData.at(row_index) != rhs.mHeapData.at(row_index)) {
-                    return true;
-                }
-            } else {
-                if (lhs.mStackData.at(row_index) != rhs.mStackData.at(row_index)) {
-                    return true;
+            for (int col_index{0}; col_index < lhs.mNumCols; col_index++) {
+                // Vector-Array comparison
+                if (lhs.mIsLargeMatrix and (not rhs.mIsLargeMatrix)) {
+                    auto lhsValue = lhs.mHeapData.at(row_index).at(col_index);
+                    auto rhsValue = rhs.mStackData.at(row_index).at(col_index);
+                    if (abs(lhsValue - rhsValue) > epsilon) {return true;}
+                } 
+                // Array-Vector comparison
+                else if ((not lhs.mIsLargeMatrix) and rhs.mIsLargeMatrix) {
+                    //do something
+                    auto lhsValue = lhs.mStackData.at(row_index).at(col_index);
+                    auto rhsValue = rhs.mHeapData.at(row_index).at(col_index);
+                    if (abs(lhsValue - rhsValue) > epsilon) {return true;}
+                } 
+                // Vector-Vector comparison
+                else if (lhs.mIsLargeMatrix and rhs.mIsLargeMatrix) {
+                    auto lhsValue = lhs.mHeapData.at(row_index).at(col_index);
+                    auto rhsValue = rhs.mHeapData.at(row_index).at(col_index);
+                    if (abs(lhsValue - rhsValue) > epsilon) {return true;}
+                } 
+                // Array-Array comparison
+                else {
+                    auto lhsValue = lhs.mStackData.at(row_index).at(col_index);
+                    auto rhsValue = rhs.mStackData.at(row_index).at(col_index);
+                    if (abs(lhsValue - rhsValue) > epsilon) {return true;}
                 }
             }
         }
@@ -616,11 +647,12 @@
             mHeapData.at(row_index).resize(mNumCols);
             std::copy(mStackData.at(row_index).begin(), mStackData.at(row_index).begin() + mNumCols, mHeapData.at(row_index).begin()); 
         }
-
         // Expanding heap data to required size and zero initialisation
         mHeapData.resize(numRows);
         fillRow(mNumRows, numRows);
+        mNumRows = numRows;
         fillCol(mNumCols, numCols);
+        mNumCols = numCols;
     }
 
     }  // namespace mtrn2500
