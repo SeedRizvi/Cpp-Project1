@@ -285,15 +285,18 @@
     bool operator==(SmallMatrix const& lhs, SmallMatrix const& rhs) {
         if ((lhs.mNumRows != rhs.mNumRows) or (lhs.mNumCols != rhs.mNumCols)) {
             return false;
-        } 
+        }
+        auto epsilon{0.0000001}; 
         for (int row_index{0}; row_index < lhs.mNumRows; row_index++) {
-            if (lhs.mIsLargeMatrix and rhs.mIsLargeMatrix) {
-                if (lhs.mHeapData.at(row_index) != rhs.mHeapData.at(row_index)) {
-                    return false;
-                }
-            } else {
-                if (lhs.mStackData.at(row_index) != rhs.mStackData.at(row_index)) {
-                    return false;
+            for (int col_index{0}; col_index < lhs.mNumCols; col_index++) {
+                if (lhs.mIsLargeMatrix and rhs.mIsLargeMatrix) {
+                    auto lhsValue = lhs.mHeapData.at(row_index).at(col_index);
+                    auto rhsValue = rhs.mHeapData.at(row_index).at(col_index);
+                    if (abs(lhsValue - rhsValue) > epsilon) {return false;}
+                } else {
+                    auto lhsValue = lhs.mStackData.at(row_index).at(col_index);
+                    auto rhsValue = rhs.mStackData.at(row_index).at(col_index);
+                    if (abs(lhsValue - rhsValue) > epsilon) {return false;}
                 }
             }
         }
