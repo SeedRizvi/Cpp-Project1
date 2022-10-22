@@ -216,6 +216,62 @@
     void SmallMatrix::resize(int numRows, int numCols) {
         if ((numRows < 0) or (numCols < 0)) {
             throw std::out_of_range("Resize rows or columns cannot be negative.");
+        } else if ((numRows == 0) and (numCols == 0)) {
+            // auto m1 = SmallMatrix();
+            // *this = std::move(m1);
+            *this = std::move(SmallMatrix());
+        }
+        // Consider all cases: increase rows and cols, increase row decrease col, 
+        // decrease row increase col, decrease row decrease col
+        else if (mIsLargeMatrix) {
+            if (numRows < mNumRows) {
+                // mHeapData.erase(mHeapData.begin() + numRows, mHeapData.begin() + mNumRows);
+                mHeapData.erase(mHeapData.begin() + numRows, mHeapData.end());
+                mNumRows = numRows;
+            } 
+            if (numCols < mNumCols) {
+                for (int row_index{0}; row_index < mNumRows; row_index++) {
+                    mHeapData.at(row_index).erase(mHeapData.at(row_index).begin() 
+                        + numCols, mHeapData.at(row_index).end());
+                }
+                mNumCols = numCols;
+            }
+            if (numRows > mNumRows) {
+                mHeapData.resize(numRows);
+                fillRow(mNumRows, numRows);
+                mNumRows = numRows;
+            }
+            if (numCols > mNumCols) {
+                // do something
+                fillCol(mNumCols, numCols);
+                mNumCols = numCols;
+            }
+        }
+        else { // Make sure this only runs if all other if's are not true
+            if (numRows * numCols >= mSmallSize) {
+                //Convert from Stack to heapdata if new size is Large.
+                std::cout << "Calling stack to heap conversion\n";
+                stackToHeap(numRows, numCols);
+                mNumRows = numRows;
+                mNumCols = numCols;
+            } else {
+                if (numRows < mNumRows) {
+                    fillRow(numRows, mNumRows);
+                    mNumRows = numRows;
+                }
+                if (numCols < mNumCols) {
+                    fillCol(numCols, mNumCols);
+                    mNumCols = numCols;
+                }
+                if (numRows > mNumRows) {
+                    fillRow(mNumRows, numRows);
+                    mNumRows = numRows;
+                }
+                if (numCols > mNumCols) {
+                    fillCol(mNumCols, numCols);
+                    mNumCols = numCols;
+                }
+            }
         }
     } // DN
 
@@ -373,7 +429,7 @@
     }
 
     void SmallMatrix::fillMatrix() {
-        for (int row_index{0}; row_index < mNumRows; row_index++) { // Changed cond from mNumRows to Cols
+        for (int row_index{0}; row_index < mNumRows; row_index++) {
             if (mIsLargeMatrix) {
                 mHeapData.at(row_index).resize(mNumCols);
                 std::fill(mHeapData.at(row_index).begin(), mHeapData.at(row_index).end(), 0);
@@ -384,12 +440,37 @@
     }
 
     void SmallMatrix::fillMatrix(double value) {
-        for (int row_index{0}; row_index < mNumRows; row_index++) { // Changed cond from mNumRows to Cols
+        for (int row_index{0}; row_index < mNumRows; row_index++) {
             if (mIsLargeMatrix) {
                 mHeapData.at(row_index).resize(mNumCols);
                 std::fill(mHeapData.at(row_index).begin(), mHeapData.at(row_index).end(), value);
             } else {
                 mStackData.at(row_index).fill(value);
+            }
+        }
+    }
+
+    void SmallMatrix::fillRow(int first, int last) {
+        for (int row_index{first}; row_index < last; row_index++) {
+            if (mIsLargeMatrix) {
+                mHeapData.at(row_index).resize(mNumCols);
+                std::fill(mHeapData.at(row_index).begin(), mHeapData.at(row_index).end(), 0);
+            } else {
+                std::fill(mStackData.at(row_index).begin(),
+                    mStackData.at(row_index).begin() + last, 0);
+            }
+        }
+    }
+
+    void SmallMatrix::fillCol(int first, int last) {
+        for (int row_index{0}; row_index < mNumRows; row_index++) {
+            if (mIsLargeMatrix) {
+                mHeapData.at(row_index).resize(last);
+                std::fill(mHeapData.at(row_index).begin() + first,
+                    mHeapData.at(row_index).end(), 0);
+            } else {
+                std::fill(mStackData.at(row_index).begin() + first,
+                    mStackData.at(row_index).begin() + last, 0);
             }
         }
     }
@@ -523,6 +604,21 @@
                 else {mStackData.at(i).at(j) -= lhs.mStackData.at(i).at(j);}
             }
         }
+    }
+
+    void SmallMatrix::stackToHeap(int numRows, int numCols) {
+        // Copying current stack data to heap data
+        mHeapData.resize(mNumRows);
+        std::cout << "Beginning stack to heap copy operation\n";
+        for (int row_index{0}; row_index < mNumRows; row_index++) {
+            mHeapData.at(row_index).resize(mNumCols);
+            std::copy(mStackData.at(row_index).begin(), mStackData.at(row_index).begin() + mNumCols, mHeapData.at(row_index).begin()); 
+        }
+
+        // Expanding heap data to required size and zero initialisation
+        mHeapData.resize(numRows);
+        fillRow(mNumRows, numRows);
+        fillCol(mNumCols, numCols);
     }
 
     }  // namespace mtrn2500

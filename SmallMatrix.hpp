@@ -374,6 +374,20 @@ public:
     void fillMatrix(double value);
 
     /**
+     * @brief Fills out rows in stack or heap data with zeroes.
+     * @param first first row to start writing from.
+     * @param last last row to write to.
+     */
+    void fillRow(int first, int last);
+
+    /**
+     * @brief Fills out columns in stack or heap data with zeroes.
+     * @param first first column to start writing from.
+     * @param last last column to write to.
+     */
+    void fillCol(int first, int last);
+
+    /**
      * @brief Writes product of row vector (or array) and num to calling matrix.
      * @param num number of type double to multiply matrix by.
      * @param sm SmallMatrix.
@@ -424,6 +438,14 @@ public:
      * @param sm SmallMatrix.
      */
     void matrixMultiply(SmallMatrix const& sm);
+
+    /**
+     * @brief Converts stack data of calling SmallMatrix to HeapData given large
+     * dimensions.
+     * @param numRows number of rows in resulting SmallMatrix.
+     * @param numCols number of columns in resulting SmallMatrix.
+     */
+    void stackToHeap(int numRows, int numCols);
 
 private:
     int mNumRows;
