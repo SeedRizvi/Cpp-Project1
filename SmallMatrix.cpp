@@ -221,8 +221,6 @@
             // *this = std::move(m1);
             *this = std::move(SmallMatrix());
         }
-        // Consider all cases: increase rows and cols, increase row decrease col, 
-        // decrease row increase col, decrease row decrease col
         else if (mIsLargeMatrix) {
             if (numRows < mNumRows) {
                 // mHeapData.erase(mHeapData.begin() + numRows, mHeapData.begin() + mNumRows);
@@ -254,6 +252,7 @@
                 stackToHeap(numRows, numCols);
                 mNumRows = numRows;
                 mNumCols = numCols;
+                mIsLargeMatrix = true;
             } else {
                 if (numRows < mNumRows) {
                     fillRow(numRows, mNumRows);
