@@ -608,7 +608,6 @@
     void SmallMatrix::stackToHeap(int numRows, int numCols) {
         // Copying current stack data to heap data
         mHeapData.resize(mNumRows);
-        std::cout << "Beginning stack to heap copy operation\n";
         for (int row_index{0}; row_index < mNumRows; row_index++) {
             mHeapData.at(row_index).resize(mNumCols);
             std::copy(mStackData.at(row_index).begin(), mStackData.at(row_index).begin() + mNumCols, mHeapData.at(row_index).begin()); 
