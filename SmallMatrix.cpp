@@ -587,22 +587,23 @@
 
     void SmallMatrix::matrixMultiply(SmallMatrix const& sm) {
         auto lhs(*this);
+        auto result = SmallMatrix(lhs.mNumRows, sm.mNumCols);
+        auto numCols1 = lhs.size().second;
         // operation for each row and col in resulting matrix
-        for (int i{0}; i < this->mNumRows; i++) {
-            for (int j{0}; j < this->mNumCols; j++) {
-                for (int k{0}; k < mNumCols; k++) {
-                    if (this->mIsLargeMatrix) {
-                        mHeapData.at(i).at(j) += 
+        for (int i{0}; i < result.mNumRows; i++) {
+            for (int j{0}; j < result.mNumCols; j++) {
+                for (int k{0}; k < numCols1; k++) {
+                    if (result.mIsLargeMatrix) {
+                        result.mHeapData.at(i).at(j) += 
                             lhs.mHeapData.at(i).at(k) * sm.mHeapData.at(k).at(j);
                     } else {
-                        mStackData.at(i).at(j) += 
+                        result.mStackData.at(i).at(j) += 
                             lhs.mStackData.at(i).at(k) * sm.mStackData.at(k).at(j);
                     }
                 }
-                if (mIsLargeMatrix) {mHeapData.at(i).at(j) -= lhs.mHeapData.at(i).at(j);}
-                else {mStackData.at(i).at(j) -= lhs.mStackData.at(i).at(j);}
             }
         }
+        *this = std::move(result);
     }
 
     void SmallMatrix::stackToHeap(int numRows, int numCols) {
