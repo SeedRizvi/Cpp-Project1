@@ -270,9 +270,57 @@
         }
     } // DN
 
-    void SmallMatrix::insertRow(int numRow, std::vector<double> const& row) {} // HD
+    void SmallMatrix::insertRow(int numRow, std::vector<double> const& row) {
+        if ((numRow < 0) or (numRow > mNumRows)) {
+            throw std::out_of_range("Specified row is not in [0,maxRows].");
+        } else if (row.size() != static_cast<unsigned int>(mNumCols)) {
+            throw std::invalid_argument("Row size does not match matrix row size.");
+        } 
+        // auto newMat = SmallMatrix(mNumRows + 1, mNumCols);
+        this->resize(mNumRows + 1, mNumCols);
+        auto const smCopy = *this;
+        if (mIsLargeMatrix) {
+            // Insert row into mHeapData
+            mHeapData.at(numRow) = row;
+            std::copy(smCopy.mHeapData.begin() + numRow, smCopy.mHeapData.end(),
+                mHeapData.begin() + numRow + 1);
+        } else {
+            // Insert row into mStackData array
+            std::copy(row.begin(), row.end(), mStackData.at(numRow).begin());
+            std::copy(smCopy.mStackData.begin() + numRow, smCopy.mStackData.end() - 1,
+                mStackData.begin() + numRow + 1);
+                // Plus one to write after new row
+        }                                         
+    } // HD
 
-    void SmallMatrix::insertCol(int numCol, std::vector<double> const& col) {} // HD
+    void SmallMatrix::insertCol(int numCol, std::vector<double> const& col) {
+        if ((numCol < 0) or (numCol > mNumCols)) {
+            throw std::out_of_range("Specified row is not in [0,maxRows].");
+        } else if (col.size() != static_cast<unsigned int>(mNumRows)) {
+            throw std::invalid_argument("Row size does not match matrix row size.");
+        } 
+        // auto newMat = SmallMatrix(mNumRows + 1, mNumCols);
+        this->resize(mNumRows, mNumCols + 1);
+        auto const smCopy = *this;
+        for (int row_index{0}; row_index < mNumRows; row_index++) {
+            if (mIsLargeMatrix) {
+                // Insert col at row_index into mHeapData
+                mHeapData.at(row_index).at(numCol) = col.at(row_index);
+                auto copyFirstCol = smCopy.mHeapData.at(row_index).begin();
+                auto copyLastCol = smCopy.mHeapData.at(row_index).end();
+                std::copy(copyFirstCol + numCol, copyLastCol, 
+                    mHeapData.at(row_index).begin() + numCol + 1);
+            } else {
+                // Insert col at row_index into mStackData
+                mStackData.at(row_index).at(numCol) = col.at(row_index);
+                auto copyFirstCol = smCopy.mStackData.at(row_index).begin();
+                auto copyLastCol = smCopy.mStackData.at(row_index).end();
+                std::copy(copyFirstCol + numCol, copyLastCol - 1, 
+                    mStackData.at(row_index).begin() + numCol + 1);
+                    // Plus one to write after new col
+            }
+        }   
+    } // HD
 
     void SmallMatrix::eraseRow(int numRow) {
         if  ((numRow < 0) or (numRow >= mNumRows)) {
