@@ -271,13 +271,18 @@
     } // DN
 
     void SmallMatrix::insertRow(int numRow, std::vector<double> const& row) {
+        auto resized = false;
+        if (mNumCols == 0) {
+            this->resize(mNumRows + 1, row.size());
+            resized = true;
+        }
         if ((numRow < 0) or (numRow > mNumRows)) {
             throw std::out_of_range("Specified row is not in [0,maxRows].");
         } else if (row.size() != static_cast<unsigned int>(mNumCols)) {
             throw std::invalid_argument("Row size does not match matrix row size.");
-        } 
-        // auto newMat = SmallMatrix(mNumRows + 1, mNumCols);
-        this->resize(mNumRows + 1, mNumCols);
+        } else if (resized == false) {
+            this->resize(mNumRows + 1, mNumCols);
+        }
         auto const smCopy = *this;
         if (mIsLargeMatrix) {
             // Insert row into mHeapData
@@ -294,13 +299,18 @@
     } // HD
 
     void SmallMatrix::insertCol(int numCol, std::vector<double> const& col) {
+        auto resized = false;
+        if (mNumRows == 0) {
+            this->resize(col.size(), mNumCols + 1);
+            resized = true;
+        }
         if ((numCol < 0) or (numCol > mNumCols)) {
-            throw std::out_of_range("Specified row is not in [0,maxRows].");
+            throw std::out_of_range("Specified col is not in [0,maxCols].");
         } else if (col.size() != static_cast<unsigned int>(mNumRows)) {
-            throw std::invalid_argument("Row size does not match matrix row size.");
-        } 
-        // auto newMat = SmallMatrix(mNumRows + 1, mNumCols);
-        this->resize(mNumRows, mNumCols + 1);
+            throw std::invalid_argument("Col size does not match matrix col size.");
+        } else if (resized == false) {
+            this->resize(mNumRows, mNumCols + 1);
+        }
         auto const smCopy = *this;
         for (int row_index{0}; row_index < mNumRows; row_index++) {
             if (mIsLargeMatrix) {
