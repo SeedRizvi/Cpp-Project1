@@ -223,7 +223,6 @@
         }
         else if (mIsLargeMatrix) {
             if (numRows < mNumRows) {
-                // mHeapData.erase(mHeapData.begin() + numRows, mHeapData.begin() + mNumRows);
                 mHeapData.erase(mHeapData.begin() + numRows, mHeapData.end());
                 mNumRows = numRows;
             } 
@@ -275,9 +274,56 @@
 
     void SmallMatrix::insertCol(int numCol, std::vector<double> const& col) {} // HD
 
-    void SmallMatrix::eraseRow(int numRow) {} // HD
+    void SmallMatrix::eraseRow(int numRow) {
+        if  ((numRow < 0) or (numRow >= mNumRows)) {
+            throw std::out_of_range("Specified row is out of range");
+        }
+        if (mIsLargeMatrix) {
+            // Plus one to ensure only a single element is erased
+            mHeapData.erase(mHeapData.begin() + numRow, mHeapData.begin() + numRow + 1);
+            mNumRows -= 1;
+        } else {
+            auto newMatrix = SmallMatrix(this->mNumRows - 1, this->mNumCols);
+            auto firstRow = mStackData.begin();
+            auto lastRow = mStackData.end();
+            // Copy first row till the row to be deleted
+            std::copy(firstRow, firstRow + numRow, newMatrix.mStackData.begin());
+            // Copy from 1 row after row to be deleted till end of StackData
+            // Thus not copying numRow and hence deleting it after std::move
+            std::copy(firstRow + numRow + 1, lastRow, 
+                newMatrix.mStackData.begin() + numRow);
+            *this = std::move(newMatrix);
+        }
+    } // HD
 
-    void SmallMatrix::eraseCol(int numCol) {} // HD
+    void SmallMatrix::eraseCol(int numCol) {
+        if  ((numCol < 0) or (numCol >= mNumCols)) {
+            throw std::out_of_range("Specified row is out of range");
+        }
+        auto newMatrix = SmallMatrix(this->mNumRows, this->mNumCols - 1);  
+        for (int row_index{0}; row_index < mNumRows; row_index++) {
+            if (mIsLargeMatrix) {
+                auto first = mHeapData.at(row_index).begin();
+                auto oneAfterNumCol = mHeapData.at(row_index).begin() + numCol + 1;
+                mHeapData.at(row_index).erase(first + numCol, oneAfterNumCol);
+            } else {
+                auto firstCol = mStackData.at(row_index).begin();
+                auto lastCol = mStackData.at(row_index).end();
+                // For each row, copy first column till the column to be deleted
+                std::copy(firstCol, firstCol + numCol, 
+                newMatrix.mStackData.at(row_index).begin());
+                // Copy from 1 column after column to be deleted for each row
+                // Thus not copying numCol and deleting it after std::move
+                std::copy(firstCol + numCol + 1, lastCol, 
+                newMatrix.mStackData.at(row_index).begin() + numCol);
+            }
+        }
+        if (mIsLargeMatrix) {
+            mNumCols -= 1;
+        } else {
+            *this = std::move(newMatrix);
+        }
+    } // HD
 
     bool operator==(SmallMatrix const& lhs, SmallMatrix const& rhs) {
         if ((lhs.mNumRows != rhs.mNumRows) or (lhs.mNumCols != rhs.mNumCols)) {
@@ -420,7 +466,21 @@
         return *this;
     } // CR
 
-    SmallMatrix transpose(SmallMatrix const& sm) { return {}; } // DN
+    SmallMatrix transpose(SmallMatrix const& sm) {
+        auto result = SmallMatrix(sm.mNumCols, sm.mNumRows);
+        for (int row_index{0}; row_index < sm.mNumRows; row_index++) {
+            for (int col_index{0}; col_index < sm.mNumCols; col_index++) {
+                if (result.mIsLargeMatrix) {
+                    result.mHeapData.at(col_index).at(row_index) = 
+                        sm.mHeapData.at(row_index).at(col_index);
+                } else {
+                    result.mStackData.at(col_index).at(row_index) = 
+                        sm.mStackData.at(row_index).at(col_index);
+                }
+            }
+        }
+        return result;
+    } // DN
 
     std::ostream& operator<<(std::ostream& os, SmallMatrix const& sm) {
         os << "[\n";
